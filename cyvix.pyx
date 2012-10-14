@@ -1,10 +1,14 @@
 cimport vix
 
 cdef bint VIX_FAILED(vix.VixError err):
-    return err != vix.VIX_OK
+    return not VIX_SUCCEEDED(err)
 
-# cdef bint VIX_SUCCEEDED(vix.VixError err):
-#     return err == vix.VIX_OK
+cdef bint VIX_SUCCEEDED(vix.VixError err):
+    return err == vix.VIX_OK
+
+cdef void VIX_CHECK_ERR_CODE(vix.VixError err):
+    if VIX_FAILED(err):
+        raise Exception(<long>err) # FIXME: better exception data...
 
 cdef public void vm_discovery_proc(vix.VixHandle handle,
                                    vix.VixEventType eventType,
@@ -21,9 +25,7 @@ cdef public void vm_discovery_proc(vix.VixHandle handle,
                                 &url,
                                 vix.VIX_PROPERTY_NONE)
     try:
-        if VIX_FAILED(err):
-            raise Exception(<long>err) # FIXME: better exception data...
-
+        VIX_CHECK_ERR_CODE(err)
         (<object>clientData).append(<bytes>url)
     finally:
         vix.Vix_FreeBuffer(url)
@@ -62,8 +64,7 @@ cdef class __Host:
                               &hostHandle, vix.VIX_PROPERTY_NONE)
 
         vix.Vix_ReleaseHandle(jobHandle)
-        if VIX_FAILED(err):
-            raise Exception(<long>err) # FIXME: better exception data...
+        VIX_CHECK_ERR_CODE(err)
         self.handle = hostHandle
 
     cpdef disconnect(self):
@@ -82,8 +83,7 @@ cdef class __Host:
                                         vm_discovery_proc, <void*>vms)
             err = vix.VixJob_Wait(jobHandle, vix.VIX_PROPERTY_NONE)
             vix.Vix_ReleaseHandle(jobHandle)
-            if VIX_FAILED(err):
-                raise Exception(<long>err) # FIXME: better exception data...
+            VIX_CHECK_ERR_CODE(err)
         return vms
 
     cpdef findRunningVMs(self):
