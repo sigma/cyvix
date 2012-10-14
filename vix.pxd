@@ -1,4 +1,8 @@
 cdef extern from "vmware-vix/vix.h":
+
+    ctypedef enum:
+        VIX_API_VERSION      = -1
+
     ctypedef int VixHandle
     ctypedef enum:
         VIX_INVALID_HANDLE = 0
@@ -316,11 +320,6 @@ cdef extern from "vmware-vix/vix.h":
         VIX_E_NET_HTTP_SSL_SECURITY             = 30201,
         VIX_E_NET_HTTP_GENERIC                  = 30202,
 
-    int VIX_ERROR_CODE(uint64)
-    ctypedef char Bool
-    Bool VIX_SUCCEEDED(uint64)
-    Bool VIX_FAILED(uint64)
-
     ctypedef enum VixPropertyType:
         VIX_PROPERTYTYPE_ANY             = 0,
         VIX_PROPERTYTYPE_INTEGER         = 1,
@@ -392,6 +391,17 @@ cdef extern from "vmware-vix/vix.h":
 
         VIX_PROPERTY_VM_ENCRYPTION_PASSWORD                = 7001,
 
+    ctypedef enum VixEventType:
+        VIX_EVENTTYPE_JOB_COMPLETED          = 2,
+        VIX_EVENTTYPE_JOB_PROGRESS           = 3,
+        VIX_EVENTTYPE_FIND_ITEM              = 8,
+        VIX_EVENTTYPE_CALLBACK_SIGNALLED     = 2, # Deprecated - Use
+                                                  # VIX_EVENTTYPE_JOB_COMPLETED
+
+    ctypedef enum VixFindItemType:
+        VIX_FIND_RUNNING_VMS         = 1,
+        VIX_FIND_REGISTERED_VMS      = 4,
+
     ctypedef void VixEventProc(VixHandle handle,
                                VixEventType eventType,
                                VixHandle moreEventInfo,
@@ -410,7 +420,19 @@ cdef extern from "vmware-vix/vix.h":
 
     void VixHost_Disconnect(VixHandle hostHandle)
 
+    VixHandle VixHost_FindItems(VixHandle hostHandle,
+                                VixFindItemType searchType,
+                                VixHandle searchCriteria,
+                                int timeout,
+                                VixEventProc *callbackProc,
+                                void *clientData)
+
     VixError VixJob_Wait(VixHandle jobHandle,
                          VixPropertyID firstPropertyID, ...)
 
     void Vix_ReleaseHandle(VixHandle handle)
+
+    VixError Vix_GetProperties(VixHandle handle,
+                               VixPropertyID firstPropertyID, ...)
+
+    void Vix_FreeBuffer(void *p)
