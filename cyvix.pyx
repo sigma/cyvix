@@ -1,5 +1,33 @@
 cimport vix
 
+cdef bint VIX_FAILED(vix.VixError err):
+    return err != vix.VIX_OK
+
+# cdef bint VIX_SUCCEEDED(vix.VixError err):
+#     return err == vix.VIX_OK
+
+cdef public void vm_discovery_proc(vix.VixHandle handle,
+                                   vix.VixEventType eventType,
+                                   vix.VixHandle moreEventInfo,
+                                   void *clientData):
+    cdef vix.VixError err = vix.VIX_OK
+    cdef char *url = NULL
+
+    if vix.VIX_EVENTTYPE_FIND_ITEM != eventType:
+        return
+
+    err = vix.Vix_GetProperties(moreEventInfo,
+                                vix.VIX_PROPERTY_FOUND_ITEM_LOCATION,
+                                &url,
+                                vix.VIX_PROPERTY_NONE)
+    try:
+        if VIX_FAILED(err):
+            raise Exception(<long>err) # FIXME: better exception data...
+
+        (<object>clientData).append(<bytes>url)
+    finally:
+        vix.Vix_FreeBuffer(url)
+
 cdef class __Host:
 
     cdef vix.VixHandle handle
@@ -25,7 +53,7 @@ cdef class __Host:
 
         cdef vix.VixHandle hostHandle
         cdef vix.VixHandle jobHandle \
-            = vix.VixHost_Connect(-1, self.provider, self.host,
+            = vix.VixHost_Connect(vix.VIX_API_VERSION, self.provider, self.host,
                                   self.port, _user, _pwd,
                                   0, vix.VIX_INVALID_HANDLE,
                                   NULL, NULL)
@@ -34,7 +62,7 @@ cdef class __Host:
                               &hostHandle, vix.VIX_PROPERTY_NONE)
 
         vix.Vix_ReleaseHandle(jobHandle)
-        if err != vix.VIX_OK:
+        if VIX_FAILED(err):
             raise Exception(<long>err) # FIXME: better exception data...
         self.handle = hostHandle
 
@@ -42,6 +70,24 @@ cdef class __Host:
         if self.handle is not vix.VIX_HANDLETYPE_NONE:
             vix.VixHost_Disconnect(self.handle)
             self.handle = vix.VIX_HANDLETYPE_NONE
+
+    cdef findVMs(self, vix.VixFindItemType typ):
+        cdef vix.VixHandle jobHandle
+        cdef vix.VixError err
+        vms = []
+        if self.handle is not vix.VIX_HANDLETYPE_NONE:
+            jobHandle \
+                = vix.VixHost_FindItems(self.handle, typ,
+                                        vix.VIX_INVALID_HANDLE, -1,
+                                        vm_discovery_proc, <void*>vms)
+            err = vix.VixJob_Wait(jobHandle, vix.VIX_PROPERTY_NONE)
+            vix.Vix_ReleaseHandle(jobHandle)
+            if VIX_FAILED(err):
+                raise Exception(<long>err) # FIXME: better exception data...
+        return vms
+
+    cpdef findRunningVMs(self):
+        return self.findVMs(vix.VIX_FIND_RUNNING_VMS)
 
     def __dealloc__(self):
         if self.handle is not None:
