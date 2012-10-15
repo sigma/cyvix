@@ -8,7 +8,7 @@ library_dirs = None
 if sys.platform == 'darwin':
     library_dirs = ["/Applications/VMware Fusion.app/Contents/Public/"]
 
-ext_modules = [Extension("cyvix", ["cyvix.pyx"],
+ext_modules = [Extension("cyvix", ["cyvix.pyx", "vix.pxd"],
                          libraries=["vixAllProducts", "dl", "pthread"],
                          library_dirs=library_dirs)]
 
