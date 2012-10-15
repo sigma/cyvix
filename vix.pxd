@@ -320,6 +320,8 @@ cdef extern from "vmware-vix/vix.h":
         VIX_E_NET_HTTP_SSL_SECURITY             = 30201,
         VIX_E_NET_HTTP_GENERIC                  = 30202,
 
+    char *Vix_GetErrorText(VixError err, char *locale)
+
     ctypedef enum VixPropertyType:
         VIX_PROPERTYTYPE_ANY             = 0,
         VIX_PROPERTYTYPE_INTEGER         = 1,

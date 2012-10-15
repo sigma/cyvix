@@ -8,7 +8,7 @@ cdef bint VIX_SUCCEEDED(vix.VixError err):
 
 cdef void VIX_CHECK_ERR_CODE(vix.VixError err):
     if VIX_FAILED(err):
-        raise Exception(<long>err) # FIXME: better exception data...
+        raise Exception(vix.Vix_GetErrorText(err, NULL))
 
 cdef public void vm_discovery_proc(vix.VixHandle handle,
                                    vix.VixEventType eventType,
