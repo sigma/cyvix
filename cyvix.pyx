@@ -122,6 +122,9 @@ class VMwareVIServerHost(Host):
 
     PROVIDER = vix.VIX_SERVICEPROVIDER_VMWARE_VI_SERVER
 
+    def findRegisteredVMs(self):
+        return self.findVMs(vix.VIX_FIND_REGISTERED_VMS)
+
 class VMwareWorkstationSharedHost(VMwareVIServerHost):
 
     PROVIDER = vix.VIX_SERVICEPROVIDER_VMWARE_WORKSTATION_SHARED
