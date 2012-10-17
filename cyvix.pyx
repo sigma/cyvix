@@ -84,7 +84,7 @@ cdef class __Host:
             err = vix.VixJob_Wait(jobHandle, vix.VIX_PROPERTY_NONE)
             vix.Vix_ReleaseHandle(jobHandle)
             VIX_CHECK_ERR_CODE(err)
-        return vms
+        return [VirtualMachine(vm, self.handle) for vm in vms]
 
     cpdef findRunningVMs(self):
         return self.findVMs(vix.VIX_FIND_RUNNING_VMS)
@@ -128,3 +128,33 @@ class VMwareVIServerHost(Host):
 class VMwareWorkstationSharedHost(VMwareVIServerHost):
 
     PROVIDER = vix.VIX_SERVICEPROVIDER_VMWARE_WORKSTATION_SHARED
+
+cdef class VirtualMachine:
+
+    cdef vix.VixHandle hostHandle
+    cdef vix.VixHandle handle
+    cpdef public char* path
+
+    def __init__(self, char* path, vix.VixHandle hostHandle):
+        self.path = path
+        self.hostHandle = hostHandle
+        self.handle = vix.VIX_INVALID_HANDLE
+
+    def __dealloc__(self):
+        if self.handle != vix.VIX_INVALID_HANDLE:
+            vix.Vix_ReleaseHandle(self.handle)
+
+    cpdef open(self):
+        cdef vix.VixHandle handle
+        cdef vix.VixHandle jobHandle \
+            = vix.VixHost_OpenVM(self.hostHandle, self.path,
+                                 vix.VIX_VMOPEN_NORMAL,
+                                 vix.VIX_INVALID_HANDLE,
+                                 NULL, NULL)
+        cdef vix.VixError err \
+            = vix.VixJob_Wait(jobHandle,
+                              vix.VIX_PROPERTY_JOB_RESULT_HANDLE,
+                              &handle,
+                              vix.VIX_PROPERTY_NONE)
+        VIX_CHECK_ERR_CODE(err)
+        self.handle = handle

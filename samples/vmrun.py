@@ -6,4 +6,4 @@ vms = h.findRunningVMs()
 
 print "Total running VMs:", len(vms)
 for vm in vms:
-    print vm
+    print vm.path
