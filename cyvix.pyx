@@ -72,7 +72,7 @@ cdef class __Host:
             vix.VixHost_Disconnect(self.handle)
             self.handle = vix.VIX_HANDLETYPE_NONE
 
-    cdef findVMs(self, vix.VixFindItemType typ):
+    cpdef _findVMs(self, vix.VixFindItemType typ):
         cdef vix.VixHandle jobHandle
         cdef vix.VixError err
         vms = []
@@ -87,7 +87,7 @@ cdef class __Host:
         return [VirtualMachine(vm, self.handle) for vm in vms]
 
     cpdef findRunningVMs(self):
-        return self.findVMs(vix.VIX_FIND_RUNNING_VMS)
+        return self._findVMs(vix.VIX_FIND_RUNNING_VMS)
 
     def __dealloc__(self):
         if self.handle is not None:
@@ -123,7 +123,7 @@ class VMwareVIServerHost(Host):
     PROVIDER = vix.VIX_SERVICEPROVIDER_VMWARE_VI_SERVER
 
     def findRegisteredVMs(self):
-        return self.findVMs(vix.VIX_FIND_REGISTERED_VMS)
+        return self._findVMs(vix.VIX_FIND_REGISTERED_VMS)
 
 class VMwareWorkstationSharedHost(VMwareVIServerHost):
 
