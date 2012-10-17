@@ -1,3 +1,7 @@
+cdef extern from "vmware-vix/vm_basic_types.h":
+    ctypedef unsigned long long uint64
+    ctypedef long long int64
+
 cdef extern from "vmware-vix/vix.h":
 
     ctypedef enum:
@@ -355,32 +359,32 @@ cdef extern from "vmware-vix/vix.h":
         # VIX_PROPERTY_VM_IS_REPLAYING                       = 237,
         VIX_PROPERTY_VM_SSL_ERROR                          = 293,
 
-        VIX_PROPERTY_JOB_RESULT_ERROR_CODE                 = 3000,
-        VIX_PROPERTY_JOB_RESULT_VM_IN_GROUP                = 3001,
-        VIX_PROPERTY_JOB_RESULT_USER_MESSAGE               = 3002,
-        VIX_PROPERTY_JOB_RESULT_EXIT_CODE                  = 3004,
-        VIX_PROPERTY_JOB_RESULT_COMMAND_OUTPUT             = 3005,
-        VIX_PROPERTY_JOB_RESULT_HANDLE                     = 3010,
-        VIX_PROPERTY_JOB_RESULT_GUEST_OBJECT_EXISTS        = 3011,
-        VIX_PROPERTY_JOB_RESULT_GUEST_PROGRAM_ELAPSED_TIME = 3017,
-        VIX_PROPERTY_JOB_RESULT_GUEST_PROGRAM_EXIT_CODE    = 3018,
-        VIX_PROPERTY_JOB_RESULT_ITEM_NAME                  = 3035,
-        VIX_PROPERTY_JOB_RESULT_FOUND_ITEM_DESCRIPTION     = 3036,
-        VIX_PROPERTY_JOB_RESULT_SHARED_FOLDER_COUNT        = 3046,
-        VIX_PROPERTY_JOB_RESULT_SHARED_FOLDER_HOST         = 3048,
-        VIX_PROPERTY_JOB_RESULT_SHARED_FOLDER_FLAGS        = 3049,
-        VIX_PROPERTY_JOB_RESULT_PROCESS_ID                 = 3051,
-        VIX_PROPERTY_JOB_RESULT_PROCESS_OWNER              = 3052,
-        VIX_PROPERTY_JOB_RESULT_PROCESS_COMMAND            = 3053,
-        VIX_PROPERTY_JOB_RESULT_FILE_FLAGS                 = 3054,
-        VIX_PROPERTY_JOB_RESULT_PROCESS_START_TIME         = 3055,
-        VIX_PROPERTY_JOB_RESULT_VM_VARIABLE_STRING         = 3056,
-        VIX_PROPERTY_JOB_RESULT_PROCESS_BEING_DEBUGGED     = 3057,
-        VIX_PROPERTY_JOB_RESULT_SCREEN_IMAGE_SIZE          = 3058,
-        VIX_PROPERTY_JOB_RESULT_SCREEN_IMAGE_DATA          = 3059,
-        VIX_PROPERTY_JOB_RESULT_FILE_SIZE                  = 3061,
-        VIX_PROPERTY_JOB_RESULT_FILE_MOD_TIME              = 3062,
-        VIX_PROPERTY_JOB_RESULT_EXTRA_ERROR_INFO           = 3084,
+        VIX_PROPERTY_JOB_RESULT_ERROR_CODE                 = 3000, # int64
+        VIX_PROPERTY_JOB_RESULT_VM_IN_GROUP                = 3001, # handle
+        VIX_PROPERTY_JOB_RESULT_USER_MESSAGE               = 3002, # char*
+        VIX_PROPERTY_JOB_RESULT_EXIT_CODE                  = 3004, # int
+        VIX_PROPERTY_JOB_RESULT_COMMAND_OUTPUT             = 3005, # char*
+        VIX_PROPERTY_JOB_RESULT_HANDLE                     = 3010, # handle
+        VIX_PROPERTY_JOB_RESULT_GUEST_OBJECT_EXISTS        = 3011, # bool
+        VIX_PROPERTY_JOB_RESULT_GUEST_PROGRAM_ELAPSED_TIME = 3017, # int
+        VIX_PROPERTY_JOB_RESULT_GUEST_PROGRAM_EXIT_CODE    = 3018, # int
+        VIX_PROPERTY_JOB_RESULT_ITEM_NAME                  = 3035, # char*
+        VIX_PROPERTY_JOB_RESULT_FOUND_ITEM_DESCRIPTION     = 3036, # char*
+        VIX_PROPERTY_JOB_RESULT_SHARED_FOLDER_COUNT        = 3046, # int
+        VIX_PROPERTY_JOB_RESULT_SHARED_FOLDER_HOST         = 3048, # char*
+        VIX_PROPERTY_JOB_RESULT_SHARED_FOLDER_FLAGS        = 3049, # int
+        VIX_PROPERTY_JOB_RESULT_PROCESS_ID                 = 3051, # int64
+        VIX_PROPERTY_JOB_RESULT_PROCESS_OWNER              = 3052, # char*
+        VIX_PROPERTY_JOB_RESULT_PROCESS_COMMAND            = 3053, # char*
+        VIX_PROPERTY_JOB_RESULT_FILE_FLAGS                 = 3054, # int
+        VIX_PROPERTY_JOB_RESULT_PROCESS_START_TIME         = 3055, # int
+        VIX_PROPERTY_JOB_RESULT_VM_VARIABLE_STRING         = 3056, # char*
+        VIX_PROPERTY_JOB_RESULT_PROCESS_BEING_DEBUGGED     = 3057, # bool
+        VIX_PROPERTY_JOB_RESULT_SCREEN_IMAGE_SIZE          = 3058, # int
+        VIX_PROPERTY_JOB_RESULT_SCREEN_IMAGE_DATA          = 3059, # blob
+        VIX_PROPERTY_JOB_RESULT_FILE_SIZE                  = 3061, # int64
+        VIX_PROPERTY_JOB_RESULT_FILE_MOD_TIME              = 3062, # int64
+        VIX_PROPERTY_JOB_RESULT_EXTRA_ERROR_INFO           = 3084, # char*
 
         VIX_PROPERTY_FOUND_ITEM_LOCATION                   = 4010,
 
@@ -403,6 +407,9 @@ cdef extern from "vmware-vix/vix.h":
     ctypedef enum VixFindItemType:
         VIX_FIND_RUNNING_VMS         = 1,
         VIX_FIND_REGISTERED_VMS      = 4,
+
+    ctypedef enum VixVMOpenOptions:
+        VIX_VMOPEN_NORMAL  = 0,
 
     ctypedef void VixEventProc(VixHandle handle,
                                VixEventType eventType,
@@ -438,3 +445,13 @@ cdef extern from "vmware-vix/vix.h":
                                VixPropertyID firstPropertyID, ...)
 
     void Vix_FreeBuffer(void *p)
+
+    VixHandle VixHost_OpenVM(VixHandle hostHandle,
+                             char *vmxFilePathName,
+                             VixVMOpenOptions options,
+                             VixHandle propertyListHandle,
+                             VixEventProc *callbackProc,
+                             void *clientData)
+
+    VixError Vix_GetPropertyType(VixHandle handle, VixPropertyID propertyID,
+                                 VixPropertyType *propertyType)
