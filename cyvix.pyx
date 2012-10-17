@@ -6,7 +6,7 @@ cdef bint VIX_FAILED(vix.VixError err):
 cdef bint VIX_SUCCEEDED(vix.VixError err):
     return err == vix.VIX_OK
 
-cdef void VIX_CHECK_ERR_CODE(vix.VixError err):
+cdef VIX_CHECK_ERR_CODE(vix.VixError err):
     if VIX_FAILED(err):
         raise Exception(vix.Vix_GetErrorText(err, NULL))
 
