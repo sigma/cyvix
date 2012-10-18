@@ -171,7 +171,7 @@ cdef class VirtualMachine:
         options = vix.VIX_LOGIN_IN_GUEST_REQUIRE_INTERACTIVE_ENVIRONMENT if interactive else 0
         cdef vix.VixHandle jobHandle \
             = vix.VixVM_LoginInGuest(self.handle, user, pwd,
-                                     options, NULL, NULL)
+                                     <int>options, NULL, NULL)
         cdef vix.VixError err \
             = vix.VixJob_Wait(jobHandle, vix.VIX_PROPERTY_NONE)
         vix.Vix_ReleaseHandle(jobHandle)
@@ -209,9 +209,9 @@ cdef class VirtualMachine:
         vix.Vix_ReleaseHandle(jobHandle)
         VIX_CHECK_ERR_CODE(err)
 
-    cpdef int runProgram(self, char* prog, char* options, bint block=True):
+    cpdef runProgram(self, char* prog, char* options, bint block=True):
         cdef int opts = <int>vix.VIX_RUNPROGRAM_ACTIVATE_WINDOW
-        cdef int err_code
+        cdef int err_code, elapsed_time, proc_id
         if not block:
             opts |= vix.VIX_RUNPROGRAM_RETURN_IMMEDIATELY
         cdef vix.VixHandle jobHandle \
@@ -221,9 +221,21 @@ cdef class VirtualMachine:
                                           NULL, NULL)
         cdef vix.VixError err \
             = vix.VixJob_Wait(jobHandle,
-                              vix.VIX_PROPERTY_JOB_RESULT_ERROR_CODE,
+                              vix.VIX_PROPERTY_JOB_RESULT_PROCESS_ID,
+                              &proc_id,
+                              vix.VIX_PROPERTY_JOB_RESULT_GUEST_PROGRAM_ELAPSED_TIME,
+                              &elapsed_time,
+                              vix.VIX_PROPERTY_JOB_RESULT_GUEST_PROGRAM_EXIT_CODE,
                               &err_code,
                               vix.VIX_PROPERTY_NONE)
         vix.Vix_ReleaseHandle(jobHandle)
         VIX_CHECK_ERR_CODE(err)
-        return err_code
+        return {'code': err_code, 'pid': proc_id, 'time': elapsed_time}
+
+    cpdef killProcess(self, int pid):
+        cdef vix.VixHandle jobHandle \
+            = vix.VixVM_KillProcessInGuest(self.handle, pid, 0, NULL, NULL)
+        cdef vix.VixError err \
+            = vix.VixJob_Wait(jobHandle, vix.VIX_PROPERTY_NONE)
+        vix.Vix_ReleaseHandle(jobHandle)
+        VIX_CHECK_ERR_CODE(err)
