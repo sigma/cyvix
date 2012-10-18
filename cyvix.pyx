@@ -67,7 +67,7 @@ cdef class __Host:
         VIX_CHECK_ERR_CODE(err)
         self.handle = hostHandle
 
-    cpdef disconnect(self):
+    def disconnect(self):
         if self.handle is not vix.VIX_HANDLETYPE_NONE:
             vix.VixHost_Disconnect(self.handle)
             self.handle = vix.VIX_HANDLETYPE_NONE
@@ -86,7 +86,7 @@ cdef class __Host:
             VIX_CHECK_ERR_CODE(err)
         return [VirtualMachine(vm, self.handle) for vm in vms]
 
-    cpdef findRunningVMs(self):
+    def findRunningVMs(self):
         return self._findVMs(vix.VIX_FIND_RUNNING_VMS)
 
     def __dealloc__(self):
