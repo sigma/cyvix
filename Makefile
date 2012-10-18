@@ -20,3 +20,6 @@ endif
 clean:
 	rm -f $(TARGET) $(subst .pyx,.c,$(wildcard *.pyx)) $(subst .pyx,.h,$(wildcard *.pyx))
 	rm -rf build/
+
+install: $(TARGET)
+	$(PYTHON) setup.py install
