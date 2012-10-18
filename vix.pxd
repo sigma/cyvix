@@ -455,3 +455,105 @@ cdef extern from "vmware-vix/vix.h":
 
     VixError Vix_GetPropertyType(VixHandle handle, VixPropertyID propertyID,
                                  VixPropertyType *propertyType)
+
+    # Guest operations
+
+    VixHandle VixVM_WaitForToolsInGuest(VixHandle vmHandle,
+                                        int timeoutInSeconds,
+                                        VixEventProc *callbackProc,
+                                        void *clientData)
+
+    ctypedef enum:
+        VIX_LOGIN_IN_GUEST_REQUIRE_INTERACTIVE_ENVIRONMENT      = 0x08
+
+    VixHandle VixVM_LoginInGuest(VixHandle vmHandle,
+                                 char *userName,
+                                 char *password,
+                                 int options,
+                                 VixEventProc *callbackProc,
+                                 void *clientData)
+
+    VixHandle VixVM_LogoutFromGuest(VixHandle vmHandle,
+                                    VixEventProc *callbackProc,
+                                    void *clientData)
+
+
+    # Guest Process functions
+
+    ctypedef enum VixRunProgramOptions:
+        VIX_RUNPROGRAM_RETURN_IMMEDIATELY   = 0x0001,
+        VIX_RUNPROGRAM_ACTIVATE_WINDOW      = 0x0002
+
+    VixHandle VixVM_RunProgramInGuest(VixHandle vmHandle,
+                                      char *guestProgramName,
+                                      char *commandLineArgs,
+                                      VixRunProgramOptions options,
+                                      VixHandle propertyListHandle,
+                                      VixEventProc *callbackProc,
+                                      void *clientData)
+
+    VixHandle VixVM_ListProcessesInGuest(VixHandle vmHandle,
+                                         int options,
+                                         VixEventProc *callbackProc,
+                                         void *clientData)
+
+    VixHandle VixVM_KillProcessInGuest(VixHandle vmHandle,
+                                       uint64 pid,
+                                       int options,
+                                       VixEventProc *callbackProc,
+                                       void *clientData)
+
+    VixHandle VixVM_RunScriptInGuest(VixHandle vmHandle,
+                                     char *interpreter,
+                                     char *scriptText,
+                                     VixRunProgramOptions options,
+                                     VixHandle propertyListHandle,
+                                     VixEventProc *callbackProc,
+                                     void *clientData)
+
+    # Guest File functions
+
+    VixHandle VixVM_CopyFileFromHostToGuest(VixHandle vmHandle,
+                                            char *hostPathName,
+                                            char *guestPathName,
+                                            int options,
+                                            VixHandle propertyListHandle,
+                                            VixEventProc *callbackProc,
+                                            void *clientData)
+
+    VixHandle VixVM_CopyFileFromGuestToHost(VixHandle vmHandle,
+                                            char *guestPathName,
+                                            char *hostPathName,
+                                            int options,
+                                            VixHandle propertyListHandle,
+                                            VixEventProc *callbackProc,
+                                            void *clientData)
+
+    VixHandle VixVM_DeleteFileInGuest(VixHandle vmHandle,
+                                      char *guestPathName,
+                                      VixEventProc *callbackProc,
+                                      void *clientData)
+
+    VixHandle VixVM_FileExistsInGuest(VixHandle vmHandle,
+                                      char *guestPathName,
+                                      VixEventProc *callbackProc,
+                                      void *clientData)
+
+    VixHandle VixVM_RenameFileInGuest(VixHandle vmHandle,
+                                      char *oldName,
+                                      char *newName,
+                                      int options,
+                                      VixHandle propertyListHandle,
+                                      VixEventProc *callbackProc,
+                                      void *clientData)
+
+    VixHandle VixVM_CreateTempFileInGuest(VixHandle vmHandle,
+                                          int options,
+                                          VixHandle propertyListHandle,
+                                          VixEventProc *callbackProc,
+                                          void *clientData)
+
+    VixHandle VixVM_GetFileInfoInGuest(VixHandle vmHandle,
+                                       char *pathName,
+                                       VixEventProc *callbackProc,
+                                       void *clientData)
