@@ -557,3 +557,28 @@ cdef extern from "vmware-vix/vix.h":
                                        char *pathName,
                                        VixEventProc *callbackProc,
                                        void *clientData)
+
+    # Guest Directory functions
+
+    VixHandle VixVM_ListDirectoryInGuest(VixHandle vmHandle,
+                                         char *pathName,
+                                         int options,
+                                         VixEventProc *callbackProc,
+                                         void *clientData)
+
+    VixHandle VixVM_CreateDirectoryInGuest(VixHandle vmHandle,
+                                           char *pathName,
+                                           VixHandle propertyListHandle,
+                                           VixEventProc *callbackProc,
+                                           void *clientData)
+
+    VixHandle VixVM_DeleteDirectoryInGuest(VixHandle vmHandle,
+                                           char *pathName,
+                                           int options,
+                                           VixEventProc *callbackProc,
+                                           void *clientData)
+
+    VixHandle VixVM_DirectoryExistsInGuest(VixHandle vmHandle,
+                                           char *pathName,
+                                           VixEventProc *callbackProc,
+                                           void *clientData)

@@ -209,6 +209,15 @@ cdef class VirtualMachine:
         vix.Vix_ReleaseHandle(jobHandle)
         VIX_CHECK_ERR_CODE(err)
 
+    cpdef rmDir(self, char* directory):
+        cdef vix.VixHandle jobHandle \
+            = vix.VixVM_DeleteDirectoryInGuest(self.handle, directory, 0,
+                                               NULL, NULL)
+        cdef vix.VixError err \
+            = vix.VixJob_Wait(jobHandle, vix.VIX_PROPERTY_NONE)
+        vix.Vix_ReleaseHandle(jobHandle)
+        VIX_CHECK_ERR_CODE(err)
+
     cpdef runProgram(self, char* prog, char* options, bint block=True):
         cdef int opts = <int>vix.VIX_RUNPROGRAM_ACTIVATE_WINDOW
         cdef int err_code, elapsed_time, proc_id
