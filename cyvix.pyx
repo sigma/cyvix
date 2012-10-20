@@ -45,6 +45,15 @@ cdef class Job:
 
         VIX_CHECK_ERR_CODE(err)
 
+    def waitHandle(self):
+        cdef vix.VixHandle handle
+        cdef vix.VixError err \
+            = vix.VixJob_Wait(self.handle,
+                              vix.VIX_PROPERTY_JOB_RESULT_HANDLE, &handle,
+                              vix.VIX_PROPERTY_NONE)
+        VIX_CHECK_ERR_CODE(err)
+        return handle
+
 cdef class __Host:
 
     cdef vix.VixHandle handle
@@ -68,19 +77,11 @@ cdef class __Host:
         if passwd is not None:
             _pwd = passwd
 
-        cdef vix.VixHandle hostHandle
-        cdef vix.VixHandle jobHandle \
-            = vix.VixHost_Connect(vix.VIX_API_VERSION, self.provider, self.host,
-                                  self.port, _user, _pwd,
-                                  0, vix.VIX_INVALID_HANDLE,
-                                  NULL, NULL)
-        cdef vix.VixError err \
-            = vix.VixJob_Wait(jobHandle, vix.VIX_PROPERTY_JOB_RESULT_HANDLE,
-                              &hostHandle, vix.VIX_PROPERTY_NONE)
-
-        vix.Vix_ReleaseHandle(jobHandle)
-        VIX_CHECK_ERR_CODE(err)
-        self.handle = hostHandle
+        self.handle = Job(vix.VixHost_Connect(vix.VIX_API_VERSION,
+                                              self.provider, self.host,
+                                              self.port, _user, _pwd,
+                                              0, vix.VIX_INVALID_HANDLE,
+                                              NULL, NULL)).waitHandle()
 
     def disconnect(self):
         if self.handle is not vix.VIX_INVALID_HANDLE:
@@ -164,20 +165,10 @@ cdef class VirtualMachine:
         if self.handle != vix.VIX_INVALID_HANDLE:
             return
 
-        cdef vix.VixHandle handle
-        cdef vix.VixHandle jobHandle \
-            = vix.VixHost_OpenVM(self.hostHandle, self.path,
-                                 vix.VIX_VMOPEN_NORMAL,
-                                 vix.VIX_INVALID_HANDLE,
-                                 NULL, NULL)
-        cdef vix.VixError err \
-            = vix.VixJob_Wait(jobHandle,
-                              vix.VIX_PROPERTY_JOB_RESULT_HANDLE,
-                              &handle,
-                              vix.VIX_PROPERTY_NONE)
-        vix.Vix_ReleaseHandle(jobHandle)
-        VIX_CHECK_ERR_CODE(err)
-        self.handle = handle
+        self.handle = Job(vix.VixHost_OpenVM(self.hostHandle, self.path,
+                                             vix.VIX_VMOPEN_NORMAL,
+                                             vix.VIX_INVALID_HANDLE,
+                                             NULL, NULL)).waitHandle()
 
     cpdef login(self, char* user, char* pwd, interactive=True):
         self.open()
