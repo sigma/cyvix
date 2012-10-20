@@ -4,15 +4,9 @@ cdef extern from "vmware-vix/vm_basic_types.h":
 
 cdef extern from "vmware-vix/vix.h":
 
-    ctypedef enum:
-        VIX_API_VERSION      = -1
-
     ctypedef int VixHandle
     ctypedef enum:
         VIX_INVALID_HANDLE = 0
-
-    ctypedef int VixHostOptions
-    ctypedef int VixEventType
 
     ctypedef enum VixHandleType:
         VIX_HANDLETYPE_NONE                 = 0,
@@ -24,17 +18,10 @@ cdef extern from "vmware-vix/vix.h":
         VIX_HANDLETYPE_PROPERTY_LIST        = 9,
         VIX_HANDLETYPE_METADATA_CONTAINER   = 11
 
-    ctypedef enum VixServiceProvider:
-        VIX_SERVICEPROVIDER_DEFAULT                   = 1,
-        VIX_SERVICEPROVIDER_VMWARE_SERVER             = 2,
-        VIX_SERVICEPROVIDER_VMWARE_WORKSTATION        = 3,
-        VIX_SERVICEPROVIDER_VMWARE_PLAYER             = 4,
-        VIX_SERVICEPROVIDER_VMWARE_VI_SERVER          = 10,
-        VIX_SERVICEPROVIDER_VMWARE_WORKSTATION_SHARED = 11,
-
     ctypedef enum VixError:
         VIX_OK                                       = 0,
 
+        # General Errors
         VIX_E_FAIL                                   = 1,
         VIX_E_OUT_OF_MEMORY                          = 2,
         VIX_E_INVALID_ARG                            = 3,
@@ -68,14 +55,17 @@ cdef extern from "vmware-vix/vix.h":
         VIX_E_HOST_CONNECTION_LOST                   = 36,
         VIX_E_DUPLICATE_NAME                         = 41,
 
+        # Handle Errors
         VIX_E_INVALID_HANDLE                         = 1000,
         VIX_E_NOT_SUPPORTED_ON_HANDLE_TYPE           = 1001,
         VIX_E_TOO_MANY_HANDLES                       = 1002,
 
+        # XML Errors
         VIX_E_NOT_FOUND                              = 2000,
         VIX_E_TYPE_MISMATCH                          = 2001,
         VIX_E_INVALID_XML                            = 2002,
 
+        # VM Control Errors
         VIX_E_TIMEOUT_WAITING_FOR_TOOLS              = 3000,
         VIX_E_UNRECOGNIZED_COMMAND                   = 3001,
         VIX_E_OP_NOT_SUPPORTED_ON_GUEST              = 3003,
@@ -116,6 +106,7 @@ cdef extern from "vmware-vix/vix.h":
         VIX_E_TOO_MANY_LOGONS                        = 3046,
         VIX_E_INVALID_AUTHENTICATION_SESSION         = 3047,
 
+        # VM Errors
         VIX_E_VM_NOT_FOUND                           = 4000,
         VIX_E_NOT_SUPPORTED_FOR_VM_VERSION           = 4001,
         VIX_E_CANNOT_READ_VM_CONFIG                  = 4002,
@@ -124,6 +115,7 @@ cdef extern from "vmware-vix/vix.h":
         VIX_E_VM_ALREADY_UP_TO_DATE                  = 4006,
         VIX_E_VM_UNSUPPORTED_GUEST                   = 4011,
 
+        # Property Errors
         VIX_E_UNRECOGNIZED_PROPERTY                  = 6000,
         VIX_E_INVALID_PROPERTY_VALUE                 = 6001,
         VIX_E_READ_ONLY_PROPERTY                     = 6002,
@@ -131,11 +123,14 @@ cdef extern from "vmware-vix/vix.h":
         VIX_E_INVALID_SERIALIZED_DATA                = 6004,
         VIX_E_PROPERTY_TYPE_MISMATCH                 = 6005,
 
+        # Completion Errors
         VIX_E_BAD_VM_INDEX                           = 8000,
 
+        # Message Errors
         VIX_E_INVALID_MESSAGE_HEADER                 = 10000,
         VIX_E_INVALID_MESSAGE_BODY                   = 10001,
 
+        # Snapshot errors
         VIX_E_SNAPSHOT_INVAL                         = 13000,
         VIX_E_SNAPSHOT_DUMPER                        = 13001,
         VIX_E_SNAPSHOT_DISKLIB                       = 13002,
@@ -161,6 +156,7 @@ cdef extern from "vmware-vix/vix.h":
         VIX_E_SNAPSHOT_RRSUSPEND                     = 13022,
         VIX_E_SNAPSHOT_NOT_REVERTABLE                = 13024,
 
+        # Host Errors
         VIX_E_HOST_DISK_INVALID_VALUE                = 14003,
         VIX_E_HOST_DISK_SECTORSIZE                   = 14004,
         VIX_E_HOST_FILE_ERROR_EOF                    = 14005,
@@ -173,6 +169,7 @@ cdef extern from "vmware-vix/vix.h":
         VIX_E_HOST_NBD_HASHFILE_VOLUME               = 14012,
         VIX_E_HOST_NBD_HASHFILE_INIT                 = 14013,
 
+        # Disklib Errors
         VIX_E_DISK_INVAL                             = 16000,
         VIX_E_DISK_NOINIT                            = 16001,
         VIX_E_DISK_NOIO                              = 16002,
@@ -211,6 +208,7 @@ cdef extern from "vmware-vix/vix.h":
         VIX_E_DISK_PARENT_NOTALLOWED                 = 16068,
         VIX_E_DISK_ATTACH_ROOTLINK                   = 16069,
 
+        # Crypt Library Errors
         VIX_E_CRYPTO_UNKNOWN_ALGORITHM               = 17000,
         VIX_E_CRYPTO_BAD_BUFFER_SIZE                 = 17001,
         VIX_E_CRYPTO_INVALID_OPERATION               = 17002,
@@ -225,15 +223,18 @@ cdef extern from "vmware-vix/vix.h":
         VIX_E_CRYPTO_EMPTY                           = 17011,
         VIX_E_CRYPTO_KEYSAFE_LOCATOR                 = 17012,
 
+        # Remoting Errors
         VIX_E_CANNOT_CONNECT_TO_HOST                 = 18000,
         VIX_E_NOT_FOR_REMOTE_HOST                    = 18001,
         VIX_E_INVALID_HOSTNAME_SPECIFICATION         = 18002,
 
+        # Screen Capture Errors
         VIX_E_SCREEN_CAPTURE_ERROR                   = 19000,
         VIX_E_SCREEN_CAPTURE_BAD_FORMAT              = 19001,
         VIX_E_SCREEN_CAPTURE_COMPRESSION_FAIL        = 19002,
         VIX_E_SCREEN_CAPTURE_LARGE_DATA              = 19003,
 
+        # Guest Errors
         VIX_E_GUEST_VOLUMES_NOT_FROZEN               = 20000,
         VIX_E_NOT_A_FILE                             = 20001,
         VIX_E_NOT_A_DIRECTORY                        = 20002,
@@ -241,6 +242,7 @@ cdef extern from "vmware-vix/vix.h":
         VIX_E_FILE_NAME_TOO_LONG                     = 20004,
         VIX_E_OPERATION_DISABLED                     = 20005,
 
+        # Tools Install Errors
         VIX_E_TOOLS_INSTALL_NO_IMAGE                 = 21000,
         VIX_E_TOOLS_INSTALL_IMAGE_INACCESIBLE        = 21001,
         VIX_E_TOOLS_INSTALL_NO_DEVICE                = 21002,
@@ -255,6 +257,7 @@ cdef extern from "vmware-vix/vix.h":
         VIX_E_TOOLS_INSTALL_IN_PROGRESS              = 21011,
         VIX_E_TOOLS_INSTALL_IMAGE_COPY_FAILED        = 21012,
 
+        # Wrapper Errors
         VIX_E_WRAPPER_WORKSTATION_NOT_INSTALLED      = 22001,
         VIX_E_WRAPPER_VERSION_NOT_FOUND              = 22002,
         VIX_E_WRAPPER_SERVICEPROVIDER_NOT_FOUND      = 22003,
@@ -262,6 +265,7 @@ cdef extern from "vmware-vix/vix.h":
         VIX_E_WRAPPER_RUNTIME_NOT_INSTALLED          = 22005,
         VIX_E_WRAPPER_MULTIPLE_SERVICEPROVIDERS      = 22006,
 
+        # FuseMnt Errors
         VIX_E_MNTAPI_MOUNTPT_NOT_FOUND               = 24000,
         VIX_E_MNTAPI_MOUNTPT_IN_USE                  = 24001,
         VIX_E_MNTAPI_DISK_NOT_FOUND                  = 24002,
@@ -287,6 +291,7 @@ cdef extern from "vmware-vix/vix.h":
         VIX_E_MNTAPI_NO_CONNECTION_DETAILS           = 24022,
         # FuseMnt errors: Do not exceed 24299
 
+        # VixMntapi Errors
         VIX_E_MNTAPI_INCOMPATIBLE_VERSION            = 24300,
         VIX_E_MNTAPI_OS_ERROR                        = 24301,
         VIX_E_MNTAPI_DRIVE_LETTER_IN_USE             = 24302,
@@ -311,6 +316,7 @@ cdef extern from "vmware-vix/vix.h":
         VIX_E_MNTAPI_OPEN_FAILURE                    = 24321,
         VIX_E_MNTAPI_VOLUME_NOT_WRITABLE             = 24322,
 
+        # Network Errors
         VIX_E_NET_HTTP_UNSUPPORTED_PROTOCOL     = 30001,
         VIX_E_NET_HTTP_URL_MALFORMAT            = 30003,
         VIX_E_NET_HTTP_COULDNT_RESOLVE_PROXY    = 30005,
@@ -338,11 +344,14 @@ cdef extern from "vmware-vix/vix.h":
     ctypedef enum VixPropertyID:
         VIX_PROPERTY_NONE                                  = 0,
 
+        # Properties used by several handle types
         VIX_PROPERTY_META_DATA_CONTAINER                   = 2,
 
+        # VIX_HANDLETYPE_HOST properties
         VIX_PROPERTY_HOST_HOSTTYPE                         = 50,
         VIX_PROPERTY_HOST_API_VERSION                      = 51,
 
+        # VIX_HANDLETYPE_VM properties
         VIX_PROPERTY_VM_NUM_VCPUS                          = 101,
         VIX_PROPERTY_VM_VMX_PATHNAME                       = 103, 
         VIX_PROPERTY_VM_VMTEAM_PATHNAME                    = 105,
@@ -359,6 +368,7 @@ cdef extern from "vmware-vix/vix.h":
         # VIX_PROPERTY_VM_IS_REPLAYING                       = 237,
         VIX_PROPERTY_VM_SSL_ERROR                          = 293,
 
+        # Result properties; these are returned by various procedures
         VIX_PROPERTY_JOB_RESULT_ERROR_CODE                 = 3000, # int64
         VIX_PROPERTY_JOB_RESULT_VM_IN_GROUP                = 3001, # handle
         VIX_PROPERTY_JOB_RESULT_USER_MESSAGE               = 3002, # char*
@@ -386,8 +396,10 @@ cdef extern from "vmware-vix/vix.h":
         VIX_PROPERTY_JOB_RESULT_FILE_MOD_TIME              = 3062, # int64
         VIX_PROPERTY_JOB_RESULT_EXTRA_ERROR_INFO           = 3084, # char*
 
+        # Event properties; these are sent in the moreEventInfo for some events
         VIX_PROPERTY_FOUND_ITEM_LOCATION                   = 4010,
 
+        # VIX_HANDLETYPE_SNAPSHOT properties
         VIX_PROPERTY_SNAPSHOT_DISPLAYNAME                  = 4200,
         VIX_PROPERTY_SNAPSHOT_DESCRIPTION                  = 4201,
         VIX_PROPERTY_SNAPSHOT_POWERSTATE                   = 4205,
@@ -395,6 +407,7 @@ cdef extern from "vmware-vix/vix.h":
 
         VIX_PROPERTY_GUEST_SHAREDFOLDERS_SHARES_PATH       = 4525,
 
+        # Virtual machine encryption properties
         VIX_PROPERTY_VM_ENCRYPTION_PASSWORD                = 7001,
 
     ctypedef enum VixEventType:
@@ -404,17 +417,48 @@ cdef extern from "vmware-vix/vix.h":
         VIX_EVENTTYPE_CALLBACK_SIGNALLED     = 2, # Deprecated - Use
                                                   # VIX_EVENTTYPE_JOB_COMPLETED
 
-    ctypedef enum VixFindItemType:
-        VIX_FIND_RUNNING_VMS         = 1,
-        VIX_FIND_REGISTERED_VMS      = 4,
+    ctypedef enum:
+        VIX_FILE_ATTRIBUTES_DIRECTORY       = 0x0001,
+        VIX_FILE_ATTRIBUTES_SYMLINK         = 0x0002,
 
-    ctypedef enum VixVMOpenOptions:
-        VIX_VMOPEN_NORMAL  = 0,
-
+    # Procedures of this type are called when an event happens on a handle
     ctypedef void VixEventProc(VixHandle handle,
                                VixEventType eventType,
                                VixHandle moreEventInfo,
                                void *clientData)
+
+    # Handle Property functions
+    void Vix_ReleaseHandle(VixHandle handle)
+
+    void Vix_AddRefHandle(VixHandle handle)
+
+    VixHandleType Vix_GetHandleType(VixHandle handle)
+
+    VixError Vix_GetProperties(VixHandle handle,
+                               VixPropertyID firstPropertyID, ...)
+
+    VixError Vix_GetPropertyType(VixHandle handle, VixPropertyID propertyID,
+                                 VixPropertyType *propertyType)
+
+    void Vix_FreeBuffer(void *p)
+
+    ctypedef int VixHostOptions
+    ctypedef enum:
+        VIX_HOSTOPTION_VERIFY_SSL_CERT       = 0x4000,
+
+    ctypedef enum VixServiceProvider:
+        VIX_SERVICEPROVIDER_DEFAULT                   = 1,
+        VIX_SERVICEPROVIDER_VMWARE_SERVER             = 2,
+        VIX_SERVICEPROVIDER_VMWARE_WORKSTATION        = 3,
+        VIX_SERVICEPROVIDER_VMWARE_PLAYER             = 4,
+        VIX_SERVICEPROVIDER_VMWARE_VI_SERVER          = 10,
+        VIX_SERVICEPROVIDER_VMWARE_WORKSTATION_SHARED = 11,
+
+    # VIX_API_VERSION tells VixHost_Connect to use the latest API version
+    # that is available for the product specified in the VixServiceProvider
+    # parameter.
+    ctypedef enum:
+        VIX_API_VERSION      = -1
 
     VixHandle VixHost_Connect(int apiVersion,
                               VixServiceProvider hostType,
@@ -429,6 +473,22 @@ cdef extern from "vmware-vix/vix.h":
 
     void VixHost_Disconnect(VixHandle hostHandle)
 
+    # VM Registration
+    VixHandle VixHost_RegisterVM(VixHandle hostHandle,
+                                 char *vmxFilePath,
+                                 VixEventProc *callbackProc,
+                                 void *clientData)
+
+    VixHandle VixHost_UnregisterVM(VixHandle hostHandle,
+                                   char *vmxFilePath,
+                                   VixEventProc *callbackProc,
+                                   void *clientData)
+
+    # VM Search
+    ctypedef enum VixFindItemType:
+        VIX_FIND_RUNNING_VMS         = 1,
+        VIX_FIND_REGISTERED_VMS      = 4,
+
     VixHandle VixHost_FindItems(VixHandle hostHandle,
                                 VixFindItemType searchType,
                                 VixHandle searchCriteria,
@@ -436,15 +496,9 @@ cdef extern from "vmware-vix/vix.h":
                                 VixEventProc *callbackProc,
                                 void *clientData)
 
-    VixError VixJob_Wait(VixHandle jobHandle,
-                         VixPropertyID firstPropertyID, ...)
-
-    void Vix_ReleaseHandle(VixHandle handle)
-
-    VixError Vix_GetProperties(VixHandle handle,
-                               VixPropertyID firstPropertyID, ...)
-
-    void Vix_FreeBuffer(void *p)
+    ctypedef int VixVMOpenOptions
+    ctypedef enum:
+        VIX_VMOPEN_NORMAL  = 0,
 
     VixHandle VixHost_OpenVM(VixHandle hostHandle,
                              char *vmxFilePathName,
@@ -453,16 +507,103 @@ cdef extern from "vmware-vix/vix.h":
                              VixEventProc *callbackProc,
                              void *clientData)
 
-    VixError Vix_GetPropertyType(VixHandle handle, VixPropertyID propertyID,
-                                 VixPropertyType *propertyType)
+    # PropertyList
+    VixError VixPropertyList_AllocPropertyList(VixHandle hostHandle,
+                                               VixHandle *resultHandle,
+                                               int firstPropertyID,
+                                               ...)
+
+    # VIX VM
+    VixHandle VixVM_Open(VixHandle hostHandle,
+                         char *vmxFilePathName,
+                         VixEventProc *callbackProc,
+                         void *clientData)
+
+    ctypedef int VixVMPowerOpOptions
+    ctypedef enum:
+        VIX_VMPOWEROP_NORMAL                      = 0,
+        VIX_VMPOWEROP_FROM_GUEST                  = 0x0004,
+        VIX_VMPOWEROP_SUPPRESS_SNAPSHOT_POWERON   = 0x0080,
+        VIX_VMPOWEROP_LAUNCH_GUI                  = 0x0200,
+        VIX_VMPOWEROP_START_VM_PAUSED             = 0x1000,
+
+    # Power operations
+    VixHandle VixVM_PowerOn(VixHandle vmHandle,
+                            VixVMPowerOpOptions powerOnOptions,
+                            VixHandle propertyListHandle,
+                            VixEventProc *callbackProc,
+                            void *clientData)
+
+    VixHandle VixVM_PowerOff(VixHandle vmHandle,
+                             VixVMPowerOpOptions powerOffOptions,
+                             VixEventProc *callbackProc,
+                             void *clientData)
+
+    VixHandle VixVM_Reset(VixHandle vmHandle,
+                          VixVMPowerOpOptions resetOptions,
+                          VixEventProc *callbackProc,
+                          void *clientData)
+
+    VixHandle VixVM_Suspend(VixHandle vmHandle,
+                            VixVMPowerOpOptions suspendOptions,
+                            VixEventProc *callbackProc,
+                            void *clientData)
+
+    VixHandle VixVM_Pause(VixHandle vmHandle,
+                          int options,
+                          VixHandle propertyList,
+                          VixEventProc *callbackProc,
+                          void *clientData)
+
+    VixHandle VixVM_Unpause(VixHandle vmHandle,
+                            int options,
+                            VixHandle propertyList,
+                            VixEventProc *callbackProc,
+                            void *clientData)
+
+    ctypedef int VixVMDeleteOptions
+    ctypedef enum:
+        VIX_VMDELETE_DISK_FILES     = 0x0002,
+
+    VixHandle VixVM_Delete(VixHandle vmHandle,
+                           VixVMDeleteOptions deleteOptions,
+                           VixEventProc *callbackProc,
+                           void *clientData)
+
+    ctypedef int VixPowerState
+    ctypedef enum:
+        VIX_POWERSTATE_POWERING_OFF    = 0x0001,
+        VIX_POWERSTATE_POWERED_OFF     = 0x0002,
+        VIX_POWERSTATE_POWERING_ON     = 0x0004,
+        VIX_POWERSTATE_POWERED_ON      = 0x0008,
+        VIX_POWERSTATE_SUSPENDING      = 0x0010,
+        VIX_POWERSTATE_SUSPENDED       = 0x0020,
+        VIX_POWERSTATE_TOOLS_RUNNING   = 0x0040,
+        VIX_POWERSTATE_RESETTING       = 0x0080,
+        VIX_POWERSTATE_BLOCKED_ON_MSG  = 0x0100,
+        VIX_POWERSTATE_PAUSED          = 0x0200,
+        VIX_POWERSTATE_RESUMING        = 0x0800,
+
+    ctypedef int VixToolsState
+    ctypedef enum:
+        VIX_TOOLSSTATE_UNKNOWN           = 0x0001,
+        VIX_TOOLSSTATE_RUNNING           = 0x0002,
+        VIX_TOOLSSTATE_NOT_INSTALLED     = 0x0004,
+
+    ctypedef enum:
+        VIX_VM_SUPPORT_SHARED_FOLDERS       = 0x0001,
+        VIX_VM_SUPPORT_MULTIPLE_SNAPSHOTS   = 0x0002,
+        VIX_VM_SUPPORT_TOOLS_INSTALL        = 0x0004,
+        VIX_VM_SUPPORT_HARDWARE_UPGRADE     = 0x0008,
+
 
     # Guest operations
-
     VixHandle VixVM_WaitForToolsInGuest(VixHandle vmHandle,
                                         int timeoutInSeconds,
                                         VixEventProc *callbackProc,
                                         void *clientData)
 
+    # VixVM_LoginInGuest option flags
     ctypedef enum:
         VIX_LOGIN_IN_GUEST_REQUIRE_INTERACTIVE_ENVIRONMENT      = 0x08
 
@@ -477,10 +618,9 @@ cdef extern from "vmware-vix/vix.h":
                                     VixEventProc *callbackProc,
                                     void *clientData)
 
-
     # Guest Process functions
-
-    ctypedef enum VixRunProgramOptions:
+    ctypedef int VixRunProgramOptions
+    ctypedef enum:
         VIX_RUNPROGRAM_RETURN_IMMEDIATELY   = 0x0001,
         VIX_RUNPROGRAM_ACTIVATE_WINDOW      = 0x0002
 
@@ -512,7 +652,6 @@ cdef extern from "vmware-vix/vix.h":
                                      void *clientData)
 
     # Guest File functions
-
     VixHandle VixVM_CopyFileFromHostToGuest(VixHandle vmHandle,
                                             char *hostPathName,
                                             char *guestPathName,
@@ -559,7 +698,6 @@ cdef extern from "vmware-vix/vix.h":
                                        void *clientData)
 
     # Guest Directory functions
-
     VixHandle VixVM_ListDirectoryInGuest(VixHandle vmHandle,
                                          char *pathName,
                                          int options,
@@ -582,3 +720,180 @@ cdef extern from "vmware-vix/vix.h":
                                            char *pathName,
                                            VixEventProc *callbackProc,
                                            void *clientData)
+
+    # Guest Variable Functions
+    ctypedef enum:
+        VIX_VM_GUEST_VARIABLE            = 1,
+        VIX_VM_CONFIG_RUNTIME_ONLY       = 2,
+        VIX_GUEST_ENVIRONMENT_VARIABLE   = 3,
+
+    VixHandle VixVM_ReadVariable(VixHandle vmHandle,
+                                 int variableType,
+                                 char *name,
+                                 int options,
+                                 VixEventProc *callbackProc,
+                                 void *clientData)
+
+    VixHandle VixVM_WriteVariable(VixHandle vmHandle,
+                                  int variableType,
+                                  char *valueName,
+                                  char *value,
+                                  int options,
+                                  VixEventProc *callbackProc,
+                                  void *clientData)
+
+    # Snapshot functions that operate on a VM
+    VixError VixVM_GetNumRootSnapshots(VixHandle vmHandle,
+                                       int *result)
+
+    VixError VixVM_GetRootSnapshot(VixHandle vmHandle,
+                                   int index,
+                                   VixHandle *snapshotHandle)
+
+    VixError VixVM_GetCurrentSnapshot(VixHandle vmHandle,
+                                      VixHandle *snapshotHandle)
+
+    VixError VixVM_GetNamedSnapshot(VixHandle vmHandle,
+                                    char *name,
+                                    VixHandle *snapshotHandle)
+
+    ctypedef int VixRemoveSnapshotOptions
+    ctypedef enum:
+        VIX_SNAPSHOT_REMOVE_CHILDREN    = 0x0001,
+
+    VixHandle VixVM_RemoveSnapshot(VixHandle vmHandle,
+                                   VixHandle snapshotHandle,
+                                   VixRemoveSnapshotOptions options,
+                                   VixEventProc *callbackProc,
+                                   void *clientData)
+
+    VixHandle VixVM_RevertToSnapshot(VixHandle vmHandle,
+                                     VixHandle snapshotHandle,
+                                     VixVMPowerOpOptions options,
+                                     VixHandle propertyListHandle,
+                                     VixEventProc *callbackProc,
+                                     void *clientData)
+
+    ctypedef int VixCreateSnapshotOptions
+    ctypedef enum:
+        VIX_SNAPSHOT_INCLUDE_MEMORY     = 0x0002,
+
+    VixHandle VixVM_CreateSnapshot(VixHandle vmHandle,
+                                   char *name,
+                                   char *description,
+                                   VixCreateSnapshotOptions options,
+                                   VixHandle propertyListHandle,
+                                   VixEventProc *callbackProc,
+                                   void *clientData)
+
+    # Shared Folders Functions
+    ctypedef int VixMsgSharedFolderOptions
+    ctypedef enum:
+        VIX_SHAREDFOLDER_WRITE_ACCESS     = 0x04
+
+    VixHandle VixVM_EnableSharedFolders(VixHandle vmHandle,
+                                        bint enabled,
+                                        int options,
+                                        VixEventProc *callbackProc,
+                                        void *clientData)
+
+    VixHandle VixVM_GetNumSharedFolders(VixHandle vmHandle,
+                                        VixEventProc *callbackProc,
+                                        void *clientData)
+
+    VixHandle VixVM_GetSharedFolderState(VixHandle vmHandle,
+                                         int index,
+                                         VixEventProc *callbackProc,
+                                         void *clientData)
+
+    VixHandle VixVM_SetSharedFolderState(VixHandle vmHandle,
+                                         char *shareName,
+                                         char *hostPathName,
+                                         VixMsgSharedFolderOptions flags,
+                                         VixEventProc *callbackProc,
+                                         void *clientData)
+
+    VixHandle VixVM_AddSharedFolder(VixHandle vmHandle,
+                                    char *shareName,
+                                    char *hostPathName,
+                                    VixMsgSharedFolderOptions flags,
+                                    VixEventProc *callbackProc,
+                                    void *clientData)
+
+    VixHandle VixVM_RemoveSharedFolder(VixHandle vmHandle,
+                                       char *shareName,
+                                       int flags,
+                                       VixEventProc *callbackProc,
+                                       void *clientData)
+
+    # Screen Capture
+    ctypedef enum:
+        VIX_CAPTURESCREENFORMAT_PNG            = 0x01,
+        VIX_CAPTURESCREENFORMAT_PNG_NOCOMPRESS = 0x02,
+
+    VixHandle VixVM_CaptureScreenImage(VixHandle vmHandle,
+                                       int captureType,
+                                       VixHandle additionalProperties,
+                                       VixEventProc *callbackProc,
+                                       void *clientdata)
+
+    # VM Cloning --
+    ctypedef enum VixCloneType:
+        VIX_CLONETYPE_FULL       = 0,
+        VIX_CLONETYPE_LINKED     = 1,
+
+    VixHandle VixVM_Clone(VixHandle vmHandle,
+                          VixHandle snapshotHandle,
+                          VixCloneType cloneType,
+                          char *destConfigPathName,
+                          int options,
+                          VixHandle propertyListHandle,
+                          VixEventProc *callbackProc,
+                          void *clientData)
+
+    # Misc Functions
+    VixHandle VixVM_UpgradeVirtualHardware(VixHandle vmHandle,
+                                           int options,
+                                           VixEventProc *callbackProc,
+                                           void *clientData)
+
+    ctypedef enum:
+        VIX_INSTALLTOOLS_MOUNT_TOOLS_INSTALLER = 0x00,
+        VIX_INSTALLTOOLS_AUTO_UPGRADE          = 0x01,
+        VIX_INSTALLTOOLS_RETURN_IMMEDIATELY    = 0x02
+
+    VixHandle VixVM_InstallTools(VixHandle vmHandle,
+                                 int options,
+                                 char *commandLineArgs,
+                                 VixEventProc *callbackProc,
+                                 void *clientData)
+
+    # VIX Job
+    VixError VixJob_Wait(VixHandle jobHandle,
+                         VixPropertyID firstPropertyID,
+                         ...)
+
+    VixError VixJob_CheckCompletion(VixHandle jobHandle,
+                                    bint *complete)
+
+
+    VixError VixJob_GetError(VixHandle jobHandle)
+
+    int VixJob_GetNumProperties(VixHandle jobHandle,
+                                int resultPropertyID)
+
+    VixError VixJob_GetNthProperties(VixHandle jobHandle,
+                                     int index,
+                                     int propertyID,
+                                     ...)
+
+    # VIX Snapshot
+    VixError VixSnapshot_GetNumChildren(VixHandle parentSnapshotHandle,
+                                        int *numChildSnapshots)
+
+    VixError VixSnapshot_GetChild(VixHandle parentSnapshotHandle,
+                                  int index,
+                                  VixHandle *childSnapshotHandle)
+
+    VixError VixSnapshot_GetParent(VixHandle snapshotHandle,
+                                   VixHandle *parentSnapshotHandle)
