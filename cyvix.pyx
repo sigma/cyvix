@@ -30,6 +30,21 @@ cdef public void vm_discovery_proc(vix.VixHandle handle,
     finally:
         vix.Vix_FreeBuffer(url)
 
+cdef class Job:
+    cdef vix.VixHandle handle
+
+    def __init__(self, vix.VixHandle jobHandle):
+        self.handle = jobHandle
+
+    def __dealloc__(self):
+        vix.Vix_ReleaseHandle(self.handle)
+
+    def wait(self):
+        cdef vix.VixError err \
+            = vix.VixJob_Wait(self.handle, vix.VIX_PROPERTY_NONE)
+
+        VIX_CHECK_ERR_CODE(err)
+
 cdef class __Host:
 
     cdef vix.VixHandle handle
@@ -81,9 +96,7 @@ cdef class __Host:
                 = vix.VixHost_FindItems(self.handle, typ,
                                         vix.VIX_INVALID_HANDLE, -1,
                                         vm_discovery_proc, <void*>vms)
-            err = vix.VixJob_Wait(jobHandle, vix.VIX_PROPERTY_NONE)
-            vix.Vix_ReleaseHandle(jobHandle)
-            VIX_CHECK_ERR_CODE(err)
+            Job(jobHandle).wait()
         return [VirtualMachine(vm, self.handle) for vm in vms]
 
     def findRunningVMs(self):
@@ -170,54 +183,29 @@ cdef class VirtualMachine:
         self.open()
         options = vix.VIX_LOGIN_IN_GUEST_REQUIRE_INTERACTIVE_ENVIRONMENT \
                   if interactive else <int>0
-        cdef vix.VixHandle jobHandle \
-            = vix.VixVM_LoginInGuest(self.handle, user, pwd,
-                                     options, NULL, NULL)
-        cdef vix.VixError err \
-            = vix.VixJob_Wait(jobHandle, vix.VIX_PROPERTY_NONE)
-        vix.Vix_ReleaseHandle(jobHandle)
-        VIX_CHECK_ERR_CODE(err)
+        Job(vix.VixVM_LoginInGuest(self.handle, user, pwd,
+                                   options, NULL, NULL)).wait()
         self.loggedin = True
 
     cpdef logout(self):
         if not self.loggedin:
             return
-        cdef vix.VixHandle jobHandle \
-            = vix.VixVM_LogoutFromGuest(self.handle, NULL, NULL)
-        cdef vix.VixError err \
-            = vix.VixJob_Wait(jobHandle, vix.VIX_PROPERTY_NONE)
-        vix.Vix_ReleaseHandle(jobHandle)
-        VIX_CHECK_ERR_CODE(err)
+        Job(vix.VixVM_LogoutFromGuest(self.handle, NULL, NULL)).wait()
         self.loggedin = False
 
     cpdef putFile(self, char* orig, char* dest):
-        cdef vix.VixHandle jobHandle \
-            = vix.VixVM_CopyFileFromHostToGuest(self.handle, orig, dest, 0,
-                                                vix.VIX_INVALID_HANDLE,
-                                                NULL, NULL)
-        cdef vix.VixError err \
-            = vix.VixJob_Wait(jobHandle, vix.VIX_PROPERTY_NONE)
-        vix.Vix_ReleaseHandle(jobHandle)
-        VIX_CHECK_ERR_CODE(err)
+        Job(vix.VixVM_CopyFileFromHostToGuest(self.handle, orig, dest, 0,
+                                              vix.VIX_INVALID_HANDLE,
+                                              NULL, NULL)).wait()
 
     cpdef getFile(self, char* orig, char* dest):
-        cdef vix.VixHandle jobHandle \
-            = vix.VixVM_CopyFileFromGuestToHost(self.handle, orig, dest, 0,
-                                                vix.VIX_INVALID_HANDLE,
-                                                NULL, NULL)
-        cdef vix.VixError err \
-            = vix.VixJob_Wait(jobHandle, vix.VIX_PROPERTY_NONE)
-        vix.Vix_ReleaseHandle(jobHandle)
-        VIX_CHECK_ERR_CODE(err)
+        Job(vix.VixVM_CopyFileFromGuestToHost(self.handle, orig, dest, 0,
+                                              vix.VIX_INVALID_HANDLE,
+                                              NULL, NULL)).wait()
 
     cpdef rmDir(self, char* directory):
-        cdef vix.VixHandle jobHandle \
-            = vix.VixVM_DeleteDirectoryInGuest(self.handle, directory, 0,
-                                               NULL, NULL)
-        cdef vix.VixError err \
-            = vix.VixJob_Wait(jobHandle, vix.VIX_PROPERTY_NONE)
-        vix.Vix_ReleaseHandle(jobHandle)
-        VIX_CHECK_ERR_CODE(err)
+        Job(vix.VixVM_DeleteDirectoryInGuest(self.handle, directory, 0,
+                                             NULL, NULL)).wait()
 
     cpdef runProgram(self, char* prog, char* options, bint block=True):
         cdef vix.VixRunProgramOptions opts = vix.VIX_RUNPROGRAM_ACTIVATE_WINDOW
@@ -243,9 +231,5 @@ cdef class VirtualMachine:
         return {'code': err_code, 'pid': proc_id, 'time': elapsed_time}
 
     cpdef killProcess(self, int pid):
-        cdef vix.VixHandle jobHandle \
-            = vix.VixVM_KillProcessInGuest(self.handle, pid, 0, NULL, NULL)
-        cdef vix.VixError err \
-            = vix.VixJob_Wait(jobHandle, vix.VIX_PROPERTY_NONE)
-        vix.Vix_ReleaseHandle(jobHandle)
-        VIX_CHECK_ERR_CODE(err)
+        Job(vix.VixVM_KillProcessInGuest(self.handle, pid, 0,
+                                         NULL, NULL)).wait()
