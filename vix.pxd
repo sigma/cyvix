@@ -1,6 +1,7 @@
 cdef extern from "vmware-vix/vm_basic_types.h":
     ctypedef unsigned long long uint64
     ctypedef long long int64
+    ctypedef char Bool
 
 cdef extern from "vmware-vix/vix.h":
 
@@ -792,7 +793,7 @@ cdef extern from "vmware-vix/vix.h":
         VIX_SHAREDFOLDER_WRITE_ACCESS     = 0x04
 
     VixHandle VixVM_EnableSharedFolders(VixHandle vmHandle,
-                                        bint enabled,
+                                        Bool enabled,
                                         int options,
                                         VixEventProc *callbackProc,
                                         void *clientData)
@@ -874,7 +875,7 @@ cdef extern from "vmware-vix/vix.h":
                          ...)
 
     VixError VixJob_CheckCompletion(VixHandle jobHandle,
-                                    bint *complete)
+                                    Bool *complete)
 
 
     VixError VixJob_GetError(VixHandle jobHandle)
