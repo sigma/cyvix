@@ -168,10 +168,11 @@ cdef class VirtualMachine:
 
     cpdef login(self, char* user, char* pwd, interactive=True):
         self.open()
-        options = vix.VIX_LOGIN_IN_GUEST_REQUIRE_INTERACTIVE_ENVIRONMENT if interactive else 0
+        options = vix.VIX_LOGIN_IN_GUEST_REQUIRE_INTERACTIVE_ENVIRONMENT \
+                  if interactive else <int>0
         cdef vix.VixHandle jobHandle \
             = vix.VixVM_LoginInGuest(self.handle, user, pwd,
-                                     <int>options, NULL, NULL)
+                                     options, NULL, NULL)
         cdef vix.VixError err \
             = vix.VixJob_Wait(jobHandle, vix.VIX_PROPERTY_NONE)
         vix.Vix_ReleaseHandle(jobHandle)
@@ -219,7 +220,7 @@ cdef class VirtualMachine:
         VIX_CHECK_ERR_CODE(err)
 
     cpdef runProgram(self, char* prog, char* options, bint block=True):
-        cdef int opts = <int>vix.VIX_RUNPROGRAM_ACTIVATE_WINDOW
+        cdef vix.VixRunProgramOptions opts = vix.VIX_RUNPROGRAM_ACTIVATE_WINDOW
         cdef int err_code, elapsed_time, proc_id
         if not block:
             opts |= vix.VIX_RUNPROGRAM_RETURN_IMMEDIATELY
