@@ -7,7 +7,7 @@ import sys
 import os
 
 VMWARE_LIB="libvixAllProducts.dylib"
-VMWARE_FUSION_LIB_PATH="/Applications/VMware\ Fusion.app/Contents/Public/"
+VMWARE_FUSION_LIB_PATH="/Applications/VMware Fusion.app/Contents/Public/"
 
 library_dirs = None
 extra_link_args = None
@@ -29,9 +29,9 @@ class build_ext(_build_ext):
         if isinstance(ext, VMwareExtension):
             if onOSX():
                 lib_name = ext.name + UnixCCompiler.shared_lib_extension
-                os.system("install_name_tool -change %s @rpath/%s %s"
+                os.system('install_name_tool -change "%s" "@rpath/%s" "%s"'
                           % (VMWARE_LIB, VMWARE_LIB, lib_name))
-                os.system("install_name_tool -add_rpath %s %s"
+                os.system('install_name_tool -add_rpath "%s" "%s"'
                           % (VMWARE_FUSION_LIB_PATH, lib_name))
 
 ext_modules = [VMwareExtension("cyvix", ["cyvix.pyx", "vix.pxd"],
