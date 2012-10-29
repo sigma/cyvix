@@ -7,8 +7,8 @@ import sys
 import os
 
 VMWARE_LIB="libvixAllProducts.dylib"
-VMWARE_FUSION_LIB_PATH="/Applications/VMware\ Fusion.app/Contents/Public/"
 VMWARE_VIX_LIB_PATH="C:\\Program Files (x86)\\VMware\\VMware VIX"
+VMWARE_FUSION_LIB_PATH="/Applications/VMware Fusion.app/Contents/Public/"
 
 library_dirs = None
 extra_link_args = None
@@ -35,9 +35,9 @@ class build_ext(_build_ext):
         if isinstance(ext, VMwareExtension):
             if onOSX():
                 ext_name = self.get_ext_fullpath(ext.name)
-                os.system("install_name_tool -change %s @rpath/%s %s"
+                os.system('install_name_tool -change "%s" "@rpath/%s" "%s"'
                           % (VMWARE_LIB, VMWARE_LIB, ext_name))
-                os.system("install_name_tool -add_rpath %s %s"
+                os.system('install_name_tool -add_rpath "%s" "%s"'
                           % (VMWARE_FUSION_LIB_PATH, ext_name))
 
 if not onWin():

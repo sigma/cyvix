@@ -98,7 +98,7 @@ cdef class __Host:
                                         vix.VIX_INVALID_HANDLE, -1,
                                         vm_discovery_proc, <void*>vms)
             Job(jobHandle).wait()
-        return [VirtualMachine(vm, self.handle) for vm in vms]
+        return [VirtualMachine(vm, self) for vm in vms]
 
     def findRunningVMs(self):
         return self._findVMs(vix.VIX_FIND_RUNNING_VMS)
@@ -150,9 +150,9 @@ cdef class VirtualMachine:
     cpdef public char* path
     cdef bint loggedin
 
-    def __init__(self, char* path, vix.VixHandle hostHandle):
+    def __init__(self, char* path, __Host host):
         self.path = path
-        self.hostHandle = hostHandle
+        self.hostHandle = host.handle
         self.handle = vix.VIX_INVALID_HANDLE
         self.loggedin = False
 
