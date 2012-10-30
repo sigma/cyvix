@@ -224,3 +224,13 @@ cdef class VirtualMachine:
     cpdef killProcess(self, int pid):
         Job(vix.VixVM_KillProcessInGuest(self.handle, pid, 0,
                                          NULL, NULL)).wait()
+
+    cpdef revertToSnapshot(self, char* snap_name):
+        cdef vix.VixHandle snapHandle
+        cdef vix.VixError err \
+            = vix.VixVM_GetNamedSnapshot(self.handle, snap_name, &snapHandle)
+        VIX_CHECK_ERR_CODE(err)
+
+        Job(vix.VixVM_RevertToSnapshot(self.handle, snapHandle, 0,
+                                       vix.VIX_INVALID_HANDLE,
+                                       NULL, NULL)).wait()
