@@ -277,3 +277,15 @@ cdef class VirtualMachine:
                 vix.Vix_FreeBuffer(owner)
                 vix.Vix_FreeBuffer(cmdline)
         print j
+
+    cpdef clone(self, char* dest, linked=False):
+        cdef vix.VixCloneType clone_type \
+            = vix.VIX_CLONETYPE_LINKED if linked else vix.VIX_CLONETYPE_FULL
+        cdef vix.VixHandle vmHandle \
+            = Job(vix.VixVM_Clone(self.handle, vix.VIX_INVALID_HANDLE,
+                                  clone_type, dest,
+                                  0, vix.VIX_INVALID_HANDLE,
+                                  NULL, NULL)).waitHandle()
+        vm = VirtualMachine(dest, self.hostHandle)
+        vm.handle = vmHandle
+        return vm
