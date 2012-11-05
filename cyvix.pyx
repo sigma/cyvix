@@ -54,6 +54,23 @@ cdef class Job:
         VIX_CHECK_ERR_CODE(err)
         return handle
 
+cdef class Process:
+    cpdef char* processName
+    cpdef vix.uint64 pid
+    cpdef char* owner
+    cpdef char* cmdline
+    cpdef vix.Bool isDebugged
+    cpdef int startTime
+
+    def __init__(self, processName, pid, owner, cmdline,
+                 isDebugged, startTime):
+        self.processName = processName
+        self.pid = pid
+        self.owner = owner
+        self.cmdline = cmdline
+        self.isDebugged = isDebugged
+        self.startTime = startTime
+
 cdef class __Host:
 
     cdef vix.VixHandle handle
@@ -224,3 +241,39 @@ cdef class VirtualMachine:
     cpdef killProcess(self, int pid):
         Job(vix.VixVM_KillProcessInGuest(self.handle, pid, 0,
                                          NULL, NULL)).wait()
+
+    def listProcesses(self):
+        cdef vix.VixError err
+        cdef char *processName
+        cdef vix.uint64 pid
+        cdef char *owner
+        cdef char *cmdline
+        cdef vix.Bool isDebugged
+        cdef int startTime
+
+        cdef vix.VixHandle jobHandle \
+            = vix.VixVM_ListProcessesInGuest(self.handle, 0, NULL, NULL)
+        j = Job(jobHandle)
+        j.wait()
+        cdef int num = vix.VixJob_GetNumProperties(
+            jobHandle,
+            vix.VIX_PROPERTY_JOB_RESULT_ITEM_NAME)
+        for i in range(num):
+            err = vix.VixJob_GetNthProperties(
+                jobHandle, i,
+                vix.VIX_PROPERTY_JOB_RESULT_ITEM_NAME, &processName,
+                vix.VIX_PROPERTY_JOB_RESULT_PROCESS_ID, &pid,
+                vix.VIX_PROPERTY_JOB_RESULT_PROCESS_OWNER, &owner,
+                vix.VIX_PROPERTY_JOB_RESULT_PROCESS_COMMAND, &cmdline,
+                vix.VIX_PROPERTY_JOB_RESULT_PROCESS_BEING_DEBUGGED, &isDebugged,
+                vix.VIX_PROPERTY_JOB_RESULT_PROCESS_START_TIME, &startTime,
+                vix.VIX_PROPERTY_NONE)
+            try:
+                VIX_CHECK_ERR_CODE(err)
+                yield Process(processName, pid, owner, cmdline,
+                              isDebugged, startTime)
+            finally:
+                vix.Vix_FreeBuffer(processName)
+                vix.Vix_FreeBuffer(owner)
+                vix.Vix_FreeBuffer(cmdline)
+        print j
