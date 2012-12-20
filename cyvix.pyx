@@ -124,7 +124,7 @@ cdef class __Host:
     def findRunningVMs(self):
         return self._findVMs(vix.VIX_FIND_RUNNING_VMS)
 
-    def __dealloc__(self):
+    def __del__(self):
         if self.handle is not None:
             self.disconnect()
 
@@ -177,7 +177,7 @@ cdef class VirtualMachine:
         self.handle = vix.VIX_INVALID_HANDLE
         self.loggedin = False
 
-    def __dealloc__(self):
+    def __del__(self):
         if self.handle != vix.VIX_INVALID_HANDLE:
             vix.Vix_ReleaseHandle(self.handle)
             self.handle = vix.VIX_INVALID_HANDLE
