@@ -30,13 +30,20 @@ cdef public void vm_discovery_proc(vix.VixHandle handle,
     finally:
         vix.Vix_FreeBuffer(url)
 
+class Program(object):
+
+    def __init__(self, id, time, code):
+        self.id = id
+        self.time = time
+        self.code = code
+
 cdef class Job:
     cdef vix.VixHandle handle
 
     def __init__(self, vix.VixHandle jobHandle):
         self.handle = jobHandle
 
-    def __dealloc__(self):
+    def __del__(self):
         vix.Vix_ReleaseHandle(self.handle)
 
     def wait(self):
@@ -53,6 +60,20 @@ cdef class Job:
                               vix.VIX_PROPERTY_NONE)
         VIX_CHECK_ERR_CODE(err)
         return handle
+
+    def waitProgram(self):
+        cdef int err_code, elapsed_time, proc_id
+        cdef vix.VixError err \
+            = vix.VixJob_Wait(self.handle,
+                              vix.VIX_PROPERTY_JOB_RESULT_PROCESS_ID,
+                              &proc_id,
+                              vix.VIX_PROPERTY_JOB_RESULT_GUEST_PROGRAM_ELAPSED_TIME,
+                              &elapsed_time,
+                              vix.VIX_PROPERTY_JOB_RESULT_GUEST_PROGRAM_EXIT_CODE,
+                              &err_code,
+                              vix.VIX_PROPERTY_NONE)
+        VIX_CHECK_ERR_CODE(err)
+        return Program(proc_id, elapsed_time, err_code)
 
 cdef class __Host:
 
@@ -203,23 +224,11 @@ cdef class VirtualMachine:
         cdef int err_code, elapsed_time, proc_id
         if not block:
             opts |= vix.VIX_RUNPROGRAM_RETURN_IMMEDIATELY
-        cdef vix.VixHandle jobHandle \
-            = vix.VixVM_RunProgramInGuest(self.handle, prog, options,
-                                          <vix.VixRunProgramOptions>opts,
-                                          vix.VIX_INVALID_HANDLE,
-                                          NULL, NULL)
-        cdef vix.VixError err \
-            = vix.VixJob_Wait(jobHandle,
-                              vix.VIX_PROPERTY_JOB_RESULT_PROCESS_ID,
-                              &proc_id,
-                              vix.VIX_PROPERTY_JOB_RESULT_GUEST_PROGRAM_ELAPSED_TIME,
-                              &elapsed_time,
-                              vix.VIX_PROPERTY_JOB_RESULT_GUEST_PROGRAM_EXIT_CODE,
-                              &err_code,
-                              vix.VIX_PROPERTY_NONE)
-        vix.Vix_ReleaseHandle(jobHandle)
-        VIX_CHECK_ERR_CODE(err)
-        return {'code': err_code, 'pid': proc_id, 'time': elapsed_time}
+        return Job(
+            vix.VixVM_RunProgramInGuest(self.handle, prog, options,
+                                        <vix.VixRunProgramOptions>opts,
+                                        vix.VIX_INVALID_HANDLE,
+                                        NULL, NULL)).waitProgram()
 
     cpdef killProcess(self, int pid):
         Job(vix.VixVM_KillProcessInGuest(self.handle, pid, 0,
