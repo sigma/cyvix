@@ -1,9 +1,9 @@
 cimport vix
 
-cdef bint VIX_FAILED(vix.VixError err):
+cdef bint VIX_FAILED(vix.VixError err) nogil:
     return not VIX_SUCCEEDED(err)
 
-cdef bint VIX_SUCCEEDED(vix.VixError err):
+cdef bint VIX_SUCCEEDED(vix.VixError err) nogil:
     return err == vix.VIX_OK
 
 cdef VIX_CHECK_ERR_CODE(vix.VixError err):
