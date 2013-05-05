@@ -291,7 +291,7 @@ cdef class VirtualMachine:
                 vix.Vix_FreeBuffer(cmdline)
         print j
 
-    cpdef clone(self, char* dest, linked=False):
+    cpdef clone(self, char* dest, int linked=False):
         cdef vix.VixCloneType clone_type \
             = vix.VIX_CLONETYPE_LINKED if linked else vix.VIX_CLONETYPE_FULL
         cdef vix.VixHandle vmHandle \
