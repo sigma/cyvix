@@ -318,3 +318,10 @@ cdef class VirtualMachine:
         Job(vix.VixVM_RevertToSnapshot(self.handle, snapHandle, 0,
                                        vix.VIX_INVALID_HANDLE,
                                        NULL, NULL)).wait()
+
+    cpdef takeSnapshot(self, char* snap_name, char* desc, int memory=False):
+        opts = vix.VIX_SNAPSHOT_INCLUDE_MEMORY if memory else 0
+        Job(vix.VixVM_CreateSnapshot(self.handle, snap_name, desc,
+                                     <vix.VixCreateSnapshotOptions>opts,
+                                     vix.VIX_INVALID_HANDLE,
+                                     NULL, NULL)).wait()
