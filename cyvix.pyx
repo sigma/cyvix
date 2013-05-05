@@ -137,7 +137,10 @@ cdef class __Host:
                                         vix.VIX_INVALID_HANDLE, -1,
                                         vm_discovery_proc, <void*>vms)
             Job(jobHandle).wait()
-        return [VirtualMachine(vm, self) for vm in vms]
+        res = [VirtualMachine(vm, self) for vm in vms]
+        for v in res:
+            v.open()
+        return res
 
     def findRunningVMs(self):
         return self._findVMs(vix.VIX_FIND_RUNNING_VMS)
@@ -298,6 +301,7 @@ cdef class VirtualMachine:
                                   NULL, NULL)).waitHandle()
         vm = VirtualMachine(dest, self.hostHandle)
         vm.handle = vmHandle
+        vm.open()
         return vm
 
     cpdef revertToSnapshot(self, char* snap_name):
