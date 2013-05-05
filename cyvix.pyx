@@ -145,6 +145,11 @@ cdef class __Host:
     def findRunningVMs(self):
         return self._findVMs(vix.VIX_FIND_RUNNING_VMS)
 
+    def openVM(self, path):
+        vm = VirtualMachine(path, self)
+        vm.open()
+        return vm
+
     def __del__(self):
         if self.handle is not None:
             self.disconnect()
