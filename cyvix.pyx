@@ -196,7 +196,7 @@ cdef class VirtualMachine:
     cdef vix.VixHandle hostHandle
     cdef vix.VixHandle handle
     cpdef public char* path
-    cdef bint loggedin
+    cdef public bint loggedin
 
     def __init__(self, char* path, __Host host):
         self.path = path
