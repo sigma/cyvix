@@ -98,8 +98,8 @@ cdef class __Host:
 
     cdef vix.VixHandle handle
     cdef vix.VixServiceProvider provider
-    cdef char* host
-    cdef int port
+    cdef public char* host
+    cdef public int port
 
     def __init__(self, host, int port, vix.VixServiceProvider provider):
         self.provider = provider
