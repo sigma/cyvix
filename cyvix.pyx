@@ -325,3 +325,8 @@ cdef class VirtualMachine:
                                      <vix.VixCreateSnapshotOptions>opts,
                                      vix.VIX_INVALID_HANDLE,
                                      NULL, NULL)).wait()
+
+    cpdef powerOn(self):
+        Job(vix.VixVM_PowerOn(self.handle, <vix.VixVMPowerOpOptions>0,
+                              vix.VIX_INVALID_HANDLE,
+                              NULL, NULL)).wait()
