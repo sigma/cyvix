@@ -7,7 +7,15 @@ class VmRun(cli.Application):
 
     VERSION = "version 1.12.1 python"
 
+    host_type = cli.SwitchAttr(["-T"], help="host type",
+                               default="ws")
+
     def main(self, *args):
+        host_types = {'ws': cyvix.VMwareWorkstationHost}
+
+        self._host = host_types[self.host_type]()
+        self._host.connect()
+
         if args:
             print "Error: Unrecognized command: %s" % (args)
             return 255
@@ -20,10 +28,7 @@ class VmRun(cli.Application):
 class VmRunStart(cli.Application):
 
     def main(self, *args):
-        h = cyvix.VMwareWorkstationHost()
-        h.connect()
-
-        vm = cyvix.VirtualMachine(args[0], h)
+        vm = cyvix.VirtualMachine(args[0], self.parent._host)
         vm.open()
         vm.powerOn(gui=True)
 
@@ -32,10 +37,7 @@ class VmRunStart(cli.Application):
 class VmRunStop(cli.Application):
 
     def main(self, *args):
-        h = cyvix.VMwareWorkstationHost()
-        h.connect()
-
-        vm = cyvix.VirtualMachine(args[0], h)
+        vm = cyvix.VirtualMachine(args[0], self.parent._host)
         vm.open()
         vm.powerOff()
 
