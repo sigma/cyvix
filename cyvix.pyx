@@ -340,3 +340,10 @@ cdef class VirtualMachine:
             options += vix.VIX_VMPOWEROP_FROM_GUEST
         Job(vix.VixVM_PowerOff(self.handle, options,
                                NULL, NULL)).wait()
+
+    cpdef reset(self, guest=False):
+        cdef vix.VixVMPowerOpOptions options = vix.VIX_VMPOWEROP_NORMAL
+        if guest:
+            options += vix.VIX_VMPOWEROP_FROM_GUEST
+        Job(vix.VixVM_Reset(self.handle, options,
+                            NULL, NULL)).wait()

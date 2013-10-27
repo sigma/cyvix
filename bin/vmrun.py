@@ -42,5 +42,14 @@ class VmRunStop(cli.Application):
         vm.powerOff()
 
 
+@VmRun.subcommand("reset")
+class VmRunReset(cli.Application):
+
+    def main(self, *args):
+        vm = cyvix.VirtualMachine(args[0], self.parent._host)
+        vm.open()
+        vm.reset()
+
+
 if __name__ == "__main__":
     VmRun.run()
