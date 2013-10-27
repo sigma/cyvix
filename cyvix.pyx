@@ -77,12 +77,13 @@ cdef class Job:
         return Program(proc_id, elapsed_time, err_code)
 
 cdef class Process:
-    cpdef char* processName
-    cpdef vix.uint64 pid
-    cpdef char* owner
-    cpdef char* cmdline
-    cpdef vix.Bool isDebugged
-    cpdef int startTime
+
+    cdef public char* processName
+    cdef public vix.uint64 pid
+    cdef public char* owner
+    cdef public char* cmdline
+    cdef public vix.Bool isDebugged
+    cdef public int startTime
 
     def __init__(self, processName, pid, owner, cmdline,
                  isDebugged, startTime):
