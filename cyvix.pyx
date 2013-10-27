@@ -326,7 +326,17 @@ cdef class VirtualMachine:
                                      vix.VIX_INVALID_HANDLE,
                                      NULL, NULL)).wait()
 
-    cpdef powerOn(self):
-        Job(vix.VixVM_PowerOn(self.handle, <vix.VixVMPowerOpOptions>0,
+    cpdef powerOn(self, gui=False):
+        cdef vix.VixVMPowerOpOptions options = vix.VIX_VMPOWEROP_NORMAL
+        if gui:
+            options += vix.VIX_VMPOWEROP_LAUNCH_GUI
+        Job(vix.VixVM_PowerOn(self.handle, options,
                               vix.VIX_INVALID_HANDLE,
                               NULL, NULL)).wait()
+
+    cpdef powerOff(self, guest=False):
+        cdef vix.VixVMPowerOpOptions options = vix.VIX_VMPOWEROP_NORMAL
+        if guest:
+            options += vix.VIX_VMPOWEROP_FROM_GUEST
+        Job(vix.VixVM_PowerOff(self.handle, options,
+                               NULL, NULL)).wait()
