@@ -3,7 +3,14 @@ from plumbum import cli
 import cyvix
 
 
-class VmRun(cli.Application):
+class Application(cli.Application):
+
+    @staticmethod
+    def _checkArgIs(args, idx, value):
+        return idx < len(args) and args[idx] == value
+
+
+class VmRun(Application):
 
     VERSION = "version 1.12.1 python"
 
@@ -24,31 +31,40 @@ class VmRun(cli.Application):
             return 1   # error exit code
 
 
+class VmRunSubCmd(Application):
+
+    def _getVM(self, name):
+        return cyvix.VirtualMachine(name, self.parent._host)
+
+
 @VmRun.subcommand("start")
-class VmRunStart(cli.Application):
+class VmRunStart(VmRunSubCmd):
 
     def main(self, *args):
-        vm = cyvix.VirtualMachine(args[0], self.parent._host)
+        gui = self._checkArgIs(args, 1, 'gui')
+        vm = self._getVM(args[0])
         vm.open()
-        vm.powerOn(gui=True)
+        vm.powerOn(gui=gui)
 
 
 @VmRun.subcommand("stop")
-class VmRunStop(cli.Application):
+class VmRunStop(VmRunSubCmd):
 
     def main(self, *args):
-        vm = cyvix.VirtualMachine(args[0], self.parent._host)
+        guest = self._checkArgIs(args, 1, 'soft')
+        vm = self._getVM(args[0])
         vm.open()
-        vm.powerOff()
+        vm.powerOff(guest=guest)
 
 
 @VmRun.subcommand("reset")
-class VmRunReset(cli.Application):
+class VmRunReset(VmRunSubCmd):
 
     def main(self, *args):
+        guest = self._checkArgIs(args, 1, 'soft')
         vm = cyvix.VirtualMachine(args[0], self.parent._host)
         vm.open()
-        vm.reset()
+        vm.reset(guest=guest)
 
 
 if __name__ == "__main__":
