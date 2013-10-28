@@ -34,7 +34,9 @@ class VmRun(Application):
 class VmRunSubCmd(Application):
 
     def _getVM(self, name):
-        return cyvix.VirtualMachine(name, self.parent._host)
+        vm = cyvix.VirtualMachine(name, self.parent._host)
+        vm.open()
+        return vm
 
 
 @VmRun.subcommand("start")
@@ -43,7 +45,6 @@ class VmRunStart(VmRunSubCmd):
     def main(self, *args):
         gui = self._checkArgIs(args, 1, 'gui')
         vm = self._getVM(args[0])
-        vm.open()
         vm.powerOn(gui=gui)
 
 
@@ -53,7 +54,6 @@ class VmRunStop(VmRunSubCmd):
     def main(self, *args):
         guest = self._checkArgIs(args, 1, 'soft')
         vm = self._getVM(args[0])
-        vm.open()
         vm.powerOff(guest=guest)
 
 
@@ -62,9 +62,32 @@ class VmRunReset(VmRunSubCmd):
 
     def main(self, *args):
         guest = self._checkArgIs(args, 1, 'soft')
-        vm = cyvix.VirtualMachine(args[0], self.parent._host)
-        vm.open()
+        vm = self._getVM(args[0])
         vm.reset(guest=guest)
+
+
+@VmRun.subcommand("suspend")
+class VmRunSuspend(VmRunSubCmd):
+
+    def main(self, *args):
+        vm = self._getVM(args[0])
+        vm.suspend()
+
+
+@VmRun.subcommand("pause")
+class VmRunPause(VmRunSubCmd):
+
+    def main(self, *args):
+        vm = self._getVM(args[0])
+        vm.pause()
+
+
+@VmRun.subcommand("unpause")
+class VmRunUnPause(VmRunSubCmd):
+
+    def main(self, *args):
+        vm = self._getVM(args[0])
+        vm.unPause()
 
 
 if __name__ == "__main__":

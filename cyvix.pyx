@@ -347,3 +347,20 @@ cdef class VirtualMachine:
             options += vix.VIX_VMPOWEROP_FROM_GUEST
         Job(vix.VixVM_Reset(self.handle, options,
                             NULL, NULL)).wait()
+
+    cpdef suspend(self):
+        cdef vix.VixVMPowerOpOptions options = vix.VIX_VMPOWEROP_NORMAL
+        Job(vix.VixVM_Suspend(self.handle, options,
+                              NULL, NULL)).wait()
+
+    cpdef pause(self):
+        cdef vix.VixVMPowerOpOptions options = vix.VIX_VMPOWEROP_NORMAL
+        Job(vix.VixVM_Pause(self.handle, options,
+                            vix.VIX_INVALID_HANDLE,
+                            NULL, NULL)).wait()
+
+    cpdef unPause(self):
+        cdef vix.VixVMPowerOpOptions options = vix.VIX_VMPOWEROP_NORMAL
+        Job(vix.VixVM_Unpause(self.handle, options,
+                              vix.VIX_INVALID_HANDLE,
+                              NULL, NULL)).wait()
