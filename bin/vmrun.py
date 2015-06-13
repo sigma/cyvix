@@ -1,6 +1,8 @@
-from plumbum import cli
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 import cyvix
+from plumbum import cli
 
 
 class Application(cli.Application):
@@ -24,10 +26,10 @@ class VmRun(Application):
         self._host.connect()
 
         if args:
-            print "Error: Unrecognized command: %s" % (args)
+            print("Error: Unrecognized command: %s" % (args))
             return 255
         if not self.nested_command:
-            print "No command given"
+            print("No command given")
             return 1   # error exit code
 
 
