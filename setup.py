@@ -1,5 +1,5 @@
-from distutils.core import setup
-from distutils.extension import Extension
+from setuptools import setup
+from setuptools import Extension
 from Cython.Distutils import build_ext as _build_ext
 
 import sys
@@ -54,6 +54,11 @@ ext_modules = [VMwareExtension("cyvix", ["cyvix.pyx", "vix.pxd"],
                                library_dirs=library_dirs,
                                extra_link_args=extra_link_args)]
 
-setup(name='ViX API',
+setup(name='cyvix',
+      version='0.1.0',
+      author='Yann Hodique',
+      author_email='yann.hodique@gmail.com',
+      scripts=['bin/vmrun.py'],
+      setup_requires=['setuptools', 'cython'],
       cmdclass={'build_ext': build_ext},
       ext_modules=ext_modules)
