@@ -1,0 +1,133 @@
+#!/usr/bin/env python
+
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+
+import argparse
+import sys
+
+import cyvix
+
+
+class BaseCmd(object):
+
+    @classmethod
+    def register(cls, subparsers):
+        parser = subparsers.add_parser(cls.cmd)
+        parser.set_defaults(func=cls.run)
+        parser.add_argument('-T', dest='host_type', choices=['ws'], default='ws')
+        return parser
+
+    @classmethod
+    def run(cls, args):
+        pass
+
+    @classmethod
+    def getVM(cls, args):
+        name = args.vmx
+        host = cls.getHost(args)
+        vm = cyvix.VirtualMachine(name, host)
+        vm.open()
+        return vm
+
+    @classmethod
+    def getHost(cls, args):
+        host_types = {'ws': cyvix.VMwareWorkstationHost}
+        host = host_types[args.host_type]()
+        host.connect()
+        return host
+
+
+class StartCmd(BaseCmd):
+    cmd = "start"
+
+    @classmethod
+    def register(cls, subparsers):
+        parser = super(StartCmd, cls).register(subparsers)
+        parser.add_argument('vmx')
+        parser.add_argument('gui', choices=['gui', 'nogui'], default='gui', nargs='?')
+        return parser
+
+    @classmethod
+    def run(cls, args):
+        vm = cls.getVM(args)
+        vm.powerOn(gui=(args.gui == 'gui'))
+
+
+class StopCmd(BaseCmd):
+    cmd = "stop"
+
+    @classmethod
+    def register(cls, subparsers):
+        parser = super(StopCmd, cls).register(subparsers)
+        parser.add_argument('vmx')
+        parser.add_argument('mode', choices=['hard', 'soft'], default='hard', nargs='?')
+        return parser
+
+    @classmethod
+    def run(cls, args):
+        vm = cls.getVM(args)
+        vm.powerOff(guest=(args.mode == 'soft'))
+
+
+class ResetCmd(StopCmd):
+    cmd = "reset"
+
+    @classmethod
+    def run(cls, args):
+        vm = cls.getVM(args)
+        vm.reset(guest=(args.mode == 'soft'))
+
+
+class SuspendCmd(StopCmd):
+    cmd = "suspend"
+
+    @classmethod
+    def run(cls, args):
+        vm = cls.getVM(args)
+        vm.suspend()
+
+
+class PauseCmd(BaseCmd):
+    cmd = "pause"
+
+    @classmethod
+    def register(cls, subparsers):
+        parser = super(PauseCmd, cls).register(subparsers)
+        parser.add_argument('vmx')
+        return parser
+
+    @classmethod
+    def run(cls, args):
+        vm = cls.getVM(args)
+        vm.pause()
+
+class UnpauseCmd(PauseCmd):
+    cmd = "unpause"
+
+    @classmethod
+    def run(cls, args):
+        vm = cls.getVM(args)
+        vm.unPause()
+
+
+def main():
+    parser = argparse.ArgumentParser(description='')
+
+    subparsers = parser.add_subparsers()
+    for cmd in [StartCmd, StopCmd, ResetCmd, SuspendCmd, PauseCmd, UnpauseCmd]:
+        cmd.register(subparsers)
+
+    args = parser.parse_args()
+    if hasattr(args, "func"):
+        try:
+            sys.exit(args.func(args))
+        except Exception as e:
+            print("Ooops, something went wrong\n%s" %
+                  (e.args[0]), file=sys.stderr)
+            sys.exit(1)
+    else:  # pragma: no cover
+        parser.print_help()
+
+if __name__ == '__main__':
+    main()
